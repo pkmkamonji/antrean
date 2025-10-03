@@ -91,7 +91,7 @@ const main = async () => {
 
         antreanList = JSON.parse(LZString.decompressFromEncodedURIComponent(antreanList));
 
-        if (antreanList.metaData.code === 200) {
+        if (antreanList.metaData.code === 200 && Number(antreanList.response.recordsTotal) > 0) {
             antreanList = await FETCH_LIST_ANTREAN(
                 antreanList.response.recordsTotal,
                 witaDate().format('DD-MM-YYYY'),
@@ -168,8 +168,9 @@ const main = async () => {
             }
 
             console.log("✅ Semua fetch selesai (berurutan).");
+        } else {
+            console.log("😊 Antrean belum tersedia untuk saat ini.");
         }
-
 
         console.log("Life: ", keepAlive.metaData.message, "\n");
         setTimeout(main, 40 * 1000);
