@@ -5,7 +5,9 @@
   "type": "module",
   "main": "main.js",
   "scripts": {
-    "start": "node lib/get-cookies.js && node main.js"
+    "start": "node lib/get-cookie.js && node main.js",
+    "main": "node main.js",
+    "migrate": "node lib/database.js"
   },
   "keywords": [
     "jkn",
@@ -20,8 +22,10 @@
   },
   "license": "ISC",
   "dependencies": {
+    "better-sqlite3": "^12.4.1",
     "image-to-ascii": "^3.2.2",
     "moment-timezone": "^0.6.0",
-    "puppeteer": "24.22.0"
+    "puppeteer": "24.22.0",
+    "set-cookie-parser": "^2.7.1"
   }
 }

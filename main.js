@@ -1,12 +1,12 @@
 import { exit } from "process";
 import readline from "readline";
+import moment from "moment-timezone";
 import { FETCH_BY_NOKA, FETCH_KEEP_ALIVE, FETCH_LIST_ANTREAN } from "./lib/endpoint/eclaim.js";
 import LZString from "./lib/LZString.js";
 import { witaDate } from "./lib/constants.js";
 import { readFile, readFromJson, saveToJson } from "./lib/storage.js";
-import { FETCH_NIK_SIAN } from "./lib/endpoint/sian.js";
-
-
+import { FETCH_NIK_SIAN, LOGIN as LoginSian } from "./lib/endpoint/sian.js";
+import { getAntreanByNikAndDate, getConfigByGroupName, insertAntrean, insertConfig } from "./lib/database.js";
 
 function ask(question) {
     const rl = readline.createInterface({
@@ -61,11 +61,21 @@ function getCookie() {
     };
 }
 
+const startTime = witaDate();
+
+let extraCookieCheck = "";
 
 const main = async () => {
     const config = getCookie();
+    const SIAN_TOKEN = await getSianToken();
 
-    const keepAlive = await FETCH_KEEP_ALIVE({ Cookie: config.cookie, "User-Agent": config.userAgent });
+    // console.log("cookie check: ", extraCookieCheck + config.cookie);
+    let keepAlive = await FETCH_KEEP_ALIVE({ Cookie: extraCookieCheck + config.cookie, "User-Agent": config.userAgent });
+    let match = keepAlive.headers.get('set-cookie').match(/(f5avra[a-zA-Z0-9_]+=[^;]+)/);
+
+    extraCookieCheck = match ? match[1] + "; " : extraCookieCheck;
+
+    keepAlive = await keepAlive.json();
 
     if (keepAlive.metaData.code !== 401) {
 
@@ -74,7 +84,7 @@ const main = async () => {
 
         if (antreanList.metaData && antreanList.metaData.code === 401) {
             console.log(antreanList.metaData.message);
-            // saveToJson({}, "eclaim.json");
+            console.info('Select dan Copy Perintah ini: pnpm run start');
             exit(0);
         }
 
@@ -95,16 +105,28 @@ const main = async () => {
                 console.log(`➡️ Data-${counter}`);
                 counter++;
 
-                console.log("No. Kartu: ", antrean.peserta.noKartu);
-                console.log("Nama: ", antrean.peserta.nama);
-                console.log("Poli: ", antrean.poli.nmPoli);
-                console.log("Sumber: ", getSumberAntrean(antrean.fromWs));
+                // console.log("No. Kartu: ", antrean.peserta.noKartu);
+                // console.log("Nama: ", antrean.peserta.nama);
+                // console.log("Poli: ", antrean.poli.nmPoli);
+                // console.log("Sumber: ", getSumberAntrean(antrean.fromWs));
 
+
+                // get detail pasien by nomor kartu di BPJS
                 let detailPeserta = await FETCH_BY_NOKA(antrean.peserta.noKartu, { Cookie: config.cookie, "User-Agent": config.userAgent });
                 detailPeserta = JSON.parse(LZString.decompressFromEncodedURIComponent(detailPeserta));
 
-                const nikData = await FETCH_NIK_SIAN(detailPeserta.response.nik).then(res => res.json());
-                console.log(nikData);
+                let isAntreanExists = await getAntreanByNikAndDate(detailPeserta.response.nik, witaDate().format('DD-MM-YYYY'));
+                // console.log("getAtrean", isAntreanExists);
+
+                if (!isAntreanExists) {
+                    insertAntrean(detailPeserta.response.nik, witaDate().format('DD-MM-YYYY'), '4-001');
+                    console.log("✅ Berhasil menambahkan antrean ", antrean.peserta.nama);
+                } else {
+                    console.log(`👌 Antrean ${antrean.peserta.nama} sudah terdaftar dengan antrean ${isAntreanExists.queue_number}`);
+                }
+
+                // const nikData = await FETCH_NIK_SIAN(detailPeserta.response.nik).then(res => res.json());
+                // console.log(nikData);
             }
 
             console.log("✅ Semua fetch selesai (berurutan).");
@@ -115,9 +137,42 @@ const main = async () => {
         setTimeout(main, 35 * 1000);
     } else {
         console.log("Life: ", keepAlive.metaData.message);
-        // saveToJson({}, "eclaim.json");
+        console.log("Lama Kerja: ", witaDate().diff(startTime), "\n\n");
+        console.info('Select dan Copy Perintah ini: pnpm run start');
     }
 
+}
+
+async function getSianToken() {
+    async function _selfGet() {
+        console.log("====SIAN SECTIONI====");
+        console.log("⭕ Get Token...");
+        const sianLogin = await LoginSian().then(res => res.json());
+        if (sianLogin.status) {
+            insertConfig("sianToken", sianLogin.token);
+            console.log("✅ Token Berhasil Disimpan");
+        } else {
+            console.log("❌ Gagal Mendapatkan Token" + sianLogin.message);
+            exit(0);
+        }
+
+        return sianLogin.token;
+    }
+
+    let checkToken = await getConfigByGroupName("sianToken");
+    let token;
+
+    if (checkToken) {
+        const tokenActiveTime = witaDate().diff(moment(checkToken.created_at, 'YYYY-MM-DD HH:mm:ss'), 'minutes');
+        if (tokenActiveTime > 110) {
+            token = await _selfGet();
+        }
+        token = checkToken.value;
+    } else {
+        token = await _selfGet();
+    }
+
+    return token;
 }
 
 main();
