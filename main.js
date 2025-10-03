@@ -123,7 +123,6 @@ const main = async () => {
                     try {
                         const sianPoli = await SET_POLI(antrean.peserta.tglLahir, antrean.poli.nmPoli);
                         const nikData = await FETCH_NIK_SIAN(detailPeserta.response.nik).then(res => res.json());
-                        console.log(nikData);
                         if (nikData.status === false) {
                             let myTable = new Table();
 
@@ -146,10 +145,10 @@ const main = async () => {
                         } else {
                             const respAntrean = await GET_ANTREAN_NUMBER(nikData.data.nik, sianPoli.id_poliklinik, sianPoli.id_dokter);
                             if (respAntrean.status) {
-                                console.log(nikData);
+                                // console.log(nikData);
                                 insertAntrean(detailPeserta.response.nik, witaDate().format('DD-MM-YYYY'), respAntrean.data.nomor_antrian);
                                 console.log("✅ Berhasil menambahkan kunjungan ", antrean.peserta.nama);
-                                console.log(respAntrean)
+                                // console.log(respAntrean)
 
                                 // print antrean
                                 await PRINT_ANTREAN({ ...respAntrean, from: 'Mobile JKN', patient: { name: nikData.data.nama, nik: nikData.data.nik, address: nikData.data.alamat_ktp } });
