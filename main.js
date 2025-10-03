@@ -47,7 +47,7 @@ function getSumberAntrean(fromWs) {
 }
 
 function getCookie() {
-    const file = readFile("../../laravel/big-app/storage/app/private/bpjs/bpjs-cookie.json");
+    const file = readFile("./storage/bpjs-cookie.json");
 
     const targetKeys = ["BIGipServerpool", "__RequestVerificationToken", "ASP.NET"];
 
@@ -55,29 +55,26 @@ function getCookie() {
         targetKeys.some(key => cookie.name.includes(key))
     );
 
-    return filterCookie.map(c => `${c.name}=${c.value}`).join("; ").trim() + ";";
+    return {
+        userAgent: file.userAgent,
+        cookie: filterCookie.map(c => `${c.name}=${c.value}`).join("; ").trim() + ";"
+    };
 }
 
 
 const main = async () => {
     const config = getCookie();
 
-    if (config === null || Object.keys(config).length === 0) {
-        let eclaimCookie = await ask("Masukkan Cookie: \n");
-        saveToJson({ eclaimCookie, 'created_at': witaDate().format('YYYY-MM-DD HH:mm:ss') }, "eclaim.json");
-        config = readFromJson("eclaim.json");
-    }
-
-    const keepAlive = await FETCH_KEEP_ALIVE({ Cookie: config.eclaimCookie.trim() });
+    const keepAlive = await FETCH_KEEP_ALIVE({ Cookie: config.cookie, "User-Agent": config.userAgent });
 
     if (keepAlive.metaData.code !== 401) {
 
         // get biasa dulu untuk dapat total record
-        let antreanList = await FETCH_LIST_ANTREAN(1, witaDate().format('DD-MM-YYYY'), { Cookie: config.eclaimCookie.trim() });
+        let antreanList = await FETCH_LIST_ANTREAN(1, witaDate().format('DD-MM-YYYY'), { Cookie: config.cookie, "User-Agent": config.userAgent });
 
         if (antreanList.metaData && antreanList.metaData.code === 401) {
             console.log(antreanList.metaData.message);
-            saveToJson({}, "eclaim.json");
+            // saveToJson({}, "eclaim.json");
             exit(0);
         }
 
@@ -87,7 +84,7 @@ const main = async () => {
             antreanList = await FETCH_LIST_ANTREAN(
                 antreanList.response.recordsTotal,
                 witaDate().format('DD-MM-YYYY'),
-                { Cookie: config.eclaimCookie.trim() }
+                { Cookie: config.cookie, "User-Agent": config.userAgent }
             );
             antreanList = JSON.parse(LZString.decompressFromEncodedURIComponent(antreanList));
 
@@ -103,7 +100,7 @@ const main = async () => {
                 console.log("Poli: ", antrean.poli.nmPoli);
                 console.log("Sumber: ", getSumberAntrean(antrean.fromWs));
 
-                let detailPeserta = await FETCH_BY_NOKA(antrean.peserta.noKartu, { Cookie: config.eclaimCookie.trim() });
+                let detailPeserta = await FETCH_BY_NOKA(antrean.peserta.noKartu, { Cookie: config.cookie, "User-Agent": config.userAgent });
                 detailPeserta = JSON.parse(LZString.decompressFromEncodedURIComponent(detailPeserta));
 
                 const nikData = await FETCH_NIK_SIAN(detailPeserta.response.nik).then(res => res.json());
@@ -118,12 +115,9 @@ const main = async () => {
         setTimeout(main, 35 * 1000);
     } else {
         console.log("Life: ", keepAlive.metaData.message);
-        saveToJson({}, "eclaim.json");
+        // saveToJson({}, "eclaim.json");
     }
 
 }
 
-// main();
-
-
-console.log(getCookie());
+main();

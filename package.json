@@ -5,7 +5,7 @@
   "type": "module",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node lib/get-cookies.js && node main.js"
   },
   "keywords": [
     "jkn",
@@ -18,5 +18,10 @@
     "email": "rochmadnf@gmail.com",
     "url": "https://github.com/rochmadnf"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "image-to-ascii": "^3.2.2",
+    "moment-timezone": "^0.6.0",
+    "puppeteer": "24.22.0"
+  }
 }

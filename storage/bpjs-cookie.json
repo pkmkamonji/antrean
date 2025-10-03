@@ -1,0 +1,63 @@
+{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+  "cookies": [
+    {
+      "name": "BIGipServerpool_pcarejkn",
+      "value": "776411052.20480.0000",
+      "domain": "pcarejkn.bpjs-kesehatan.go.id",
+      "path": "/",
+      "expires": -1,
+      "size": 44,
+      "httpOnly": true,
+      "secure": true,
+      "session": true,
+      "priority": "Medium",
+      "sameParty": false,
+      "sourceScheme": "Secure"
+    },
+    {
+      "name": "__RequestVerificationToken_L2VjbGFpbQ2",
+      "value": "YE5waCLTETNK4urM2wgntdG29qW7s1oEHNYeT5ynZu6kfoNysrXzSc6xjSdAd7xJA9yMR4z4gvQYOwLYVzgwDXC1wPxlBeDiulSW4Z4shQ01",
+      "domain": "pcarejkn.bpjs-kesehatan.go.id",
+      "path": "/",
+      "expires": -1,
+      "size": 146,
+      "httpOnly": true,
+      "secure": false,
+      "session": true,
+      "priority": "Medium",
+      "sameParty": false,
+      "sourceScheme": "Secure"
+    },
+    {
+      "name": "ASP.NET_SessionId",
+      "value": "strqlymradd3oxz3wnx3acq3",
+      "domain": "pcarejkn.bpjs-kesehatan.go.id",
+      "path": "/",
+      "expires": 1759519944.877299,
+      "size": 41,
+      "httpOnly": true,
+      "secure": true,
+      "session": false,
+      "sameSite": "Lax",
+      "priority": "Medium",
+      "sameParty": false,
+      "sourceScheme": "Secure"
+    },
+    {
+      "name": "f5avraaaaaaaaaaaaaaaa_session_",
+      "value": "INJFNEBCLPHCOEKMCGMCHKPCGJNKPINBAJNBLAEEMBIJBEOIJLEGJEOIOHAPKPCKPAODGJBNMEOAPCHLIMMAEMEIALPIFFADFPKPJMANDAALNCCGJEFLGHBOLGGHPFBN",
+      "domain": "pcarejkn.bpjs-kesehatan.go.id",
+      "path": "/eclaim",
+      "expires": -1,
+      "size": 158,
+      "httpOnly": true,
+      "secure": true,
+      "session": true,
+      "priority": "Medium",
+      "sameParty": false,
+      "sourceScheme": "Secure"
+    }
+  ],
+  "saved_at": "2025-10-03T11:32:40.028Z"
+}
