@@ -1,12 +1,12 @@
 import { exit } from "process";
 import readline from "readline";
-import moment from "moment-timezone";
 import { FETCH_BY_NOKA, FETCH_KEEP_ALIVE, FETCH_LIST_ANTREAN } from "./lib/endpoint/eclaim.js";
 import LZString from "./lib/LZString.js";
 import { witaDate } from "./lib/constants.js";
-import { readFile, readFromJson, saveToJson } from "./lib/storage.js";
-import { FETCH_NIK_SIAN, LOGIN as LoginSian } from "./lib/endpoint/sian.js";
+import { readFile } from "./lib/storage.js";
+import { FETCH_NIK_SIAN, GET_ANTREAN_NUMBER, GET_POLI, GET_SIAN_TOKEN, PRINT_ANTREAN, SET_POLI } from "./lib/endpoint/sian.js";
 import { getAntreanByNikAndDate, getConfigByGroupName, insertAntrean, insertConfig } from "./lib/database.js";
+import Table from "cli-table3";
 
 function ask(question) {
     const rl = readline.createInterface({
@@ -64,10 +64,11 @@ function getCookie() {
 const startTime = witaDate();
 
 let extraCookieCheck = "";
+let poliDewasa = 0;
 
 const main = async () => {
     const config = getCookie();
-    const SIAN_TOKEN = await getSianToken();
+    const SIAN_TOKEN = await GET_SIAN_TOKEN();
 
     // console.log("cookie check: ", extraCookieCheck + config.cookie);
     let keepAlive = await FETCH_KEEP_ALIVE({ Cookie: extraCookieCheck + config.cookie, "User-Agent": config.userAgent });
@@ -119,13 +120,51 @@ const main = async () => {
                 // console.log("getAtrean", isAntreanExists);
 
                 if (!isAntreanExists) {
-                    insertAntrean(detailPeserta.response.nik, witaDate().format('DD-MM-YYYY'), '4-001');
-                    console.log("✅ Berhasil menambahkan antrean ", antrean.peserta.nama);
+                    try {
+                        const sianPoli = await SET_POLI(antrean.peserta.tglLahir, antrean.poli.nmPoli);
+                        const nikData = await FETCH_NIK_SIAN(detailPeserta.response.nik).then(res => res.json());
+                        console.log(nikData);
+                        if (nikData.status === false) {
+                            let myTable = new Table();
+
+                            let __detail = detailPeserta.response;
+
+                            myTable.push(
+                                { 'NIK': __detail.nik },
+                                { 'No BPJS': __detail.noKartu },
+                                { 'Nama': __detail.nama },
+                                { 'Jenis Kelamin': __detail.sex === 'P' ? 'Perempuan' : 'Laki-Laki' },
+                                { 'Tanggal Lahir': __detail.tglLahir },
+                                { 'Status Kawin': __detail.statusKawin.nama },
+                                { 'Alamat': __detail.alamat },
+                                { 'Badan Usaha': __detail.badanUsaha.nama },
+                            );
+
+                            console.log("\n\n ❌❌❌❌ PASIEN INI BELUM TERDAFTAR DI APLIKASI SIAN ❌❌❌❌");
+                            console.log(myTable.toString());
+                            console.log("\n\n");
+                        } else {
+                            const respAntrean = await GET_ANTREAN_NUMBER(nikData.data.nik, sianPoli.id_poliklinik, sianPoli.id_dokter);
+                            if (respAntrean.status) {
+                                console.log(nikData);
+                                insertAntrean(detailPeserta.response.nik, witaDate().format('DD-MM-YYYY'), respAntrean.data.nomor_antrian);
+                                console.log("✅ Berhasil menambahkan kunjungan ", antrean.peserta.nama);
+                                console.log(respAntrean)
+
+                                // print antrean
+                                // await PRINT_ANTREAN({ ...respAntrean, from: 'Mobile JKN', patient: { name: nikData.data.nama, nik: nikData.data.nik, address: nikData.data.alamat_ktp } });
+
+                            }
+                        }
+                    } catch (error) {
+                        console.error(error)
+                        exit(0);
+                    }
+
                 } else {
                     console.log(`👌 Antrean ${antrean.peserta.nama} sudah terdaftar dengan antrean ${isAntreanExists.queue_number}`);
                 }
 
-                // const nikData = await FETCH_NIK_SIAN(detailPeserta.response.nik).then(res => res.json());
                 // console.log(nikData);
             }
 
@@ -134,45 +173,13 @@ const main = async () => {
 
 
         console.log("Life: ", keepAlive.metaData.message, "\n");
-        setTimeout(main, 35 * 1000);
+        setTimeout(main, 40 * 1000);
     } else {
         console.log("Life: ", keepAlive.metaData.message);
         console.log("Lama Kerja: ", witaDate().diff(startTime), "\n\n");
         console.info('Select dan Copy Perintah ini: pnpm run start');
     }
 
-}
-
-async function getSianToken() {
-    async function _selfGet() {
-        console.log("====SIAN SECTIONI====");
-        console.log("⭕ Get Token...");
-        const sianLogin = await LoginSian().then(res => res.json());
-        if (sianLogin.status) {
-            insertConfig("sianToken", sianLogin.token);
-            console.log("✅ Token Berhasil Disimpan");
-        } else {
-            console.log("❌ Gagal Mendapatkan Token" + sianLogin.message);
-            exit(0);
-        }
-
-        return sianLogin.token;
-    }
-
-    let checkToken = await getConfigByGroupName("sianToken");
-    let token;
-
-    if (checkToken) {
-        const tokenActiveTime = witaDate().diff(moment(checkToken.created_at, 'YYYY-MM-DD HH:mm:ss'), 'minutes');
-        if (tokenActiveTime > 110) {
-            token = await _selfGet();
-        }
-        token = checkToken.value;
-    } else {
-        token = await _selfGet();
-    }
-
-    return token;
 }
 
 main();

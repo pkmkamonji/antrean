@@ -1,7 +1,7 @@
-- login sian
-- get semua dokter
-- daftar yang dari mobile jkn sesuai umur di poli
-- jika poli KIA dan poli Gigi akan masuk langsung ke poli nya.
-- jika poli umum, tentukan sesuai umur.
-- simpan data jika sudah dapat nomor antrian ke json
-- kirim data ke print untuk dicetak.
+- login sian ✅
+- get semua dokter ✅
+- daftar yang dari mobile jkn sesuai umur di poli ✅
+- jika poli KIA dan poli Gigi akan masuk langsung ke poli nya. ✅
+- jika poli umum, tentukan sesuai umur. ✅
+- simpan data jika sudah dapat nomor antrian ke json ✅
+- kirim data ke print untuk dicetak. ✅
