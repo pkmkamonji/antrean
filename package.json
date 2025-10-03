@@ -1,0 +1,22 @@
+{
+  "name": "mjkn",
+  "version": "1.0.0",
+  "description": "Get Antrean From Mobile JKN to SIAN",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "jkn",
+    "bpjs",
+    "sian",
+    "antrean"
+  ],
+  "author": {
+    "name": "Rochmad Nurul Fahmi",
+    "email": "rochmadnf@gmail.com",
+    "url": "https://github.com/rochmadnf"
+  },
+  "license": "ISC"
+}
