@@ -64,7 +64,6 @@ function getCookie() {
 const startTime = witaDate();
 
 let extraCookieCheck = "";
-let poliDewasa = 0;
 
 const main = async () => {
     const config = getCookie();
@@ -135,6 +134,7 @@ const main = async () => {
                                 { 'Jenis Kelamin': __detail.sex === 'P' ? 'Perempuan' : 'Laki-Laki' },
                                 { 'Tanggal Lahir': __detail.tglLahir },
                                 { 'Status Kawin': __detail.statusKawin.nama },
+                                { 'Nomor HP': __detail.noHP },
                                 { 'Alamat': __detail.alamat },
                                 { 'Badan Usaha': __detail.badanUsaha.nama },
                             );
