@@ -151,7 +151,7 @@ const main = async () => {
                                 // console.log(respAntrean)
 
                                 // print antrean
-                                await PRINT_ANTREAN({ ...respAntrean, from: 'Mobile JKN', patient: { name: nikData.data.nama, nik: nikData.data.nik, address: nikData.data.alamat_ktp } });
+                                await PRINT_ANTREAN({ ...respAntrean, from: 'Mobile JKN', no_urut: antrean.noUrut, patient: { name: nikData.data.nama, nik: nikData.data.nik, address: nikData.data.alamat_ktp } });
 
                             }
                         }
