@@ -143,7 +143,7 @@ const main = async () => {
                             console.log(myTable.toString());
                             console.log("\n\n");
                         } else {
-                            const respAntrean = await GET_ANTREAN_NUMBER(nikData.data.nik, sianPoli.id_poliklinik, sianPoli.id_dokter);
+                            const respAntrean = await GET_ANTREAN_NUMBER(nikData.data.nik, sianPoli.kode_ruang, sianPoli.id_dokter);
                             if (respAntrean.status) {
                                 // console.log(nikData);
                                 insertAntrean(detailPeserta.response.nik, witaDate().format('DD-MM-YYYY'), respAntrean.data.nomor_antrian);
